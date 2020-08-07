@@ -25,28 +25,15 @@ func Work(i int) {
 	vehicleLocations := output.TransformVehicles(vehicles)
 	output.WriteLocationsToFile("output_vehicles.json", vehicleLocations)
 
-	/* 	for _, driver := range drivers {
-		fmt.Println(driver)
-	} */
-	/*
-		fmt.Println("-------------")
-		fmt.Println("vehicles")
-		vehicles := db.QueryVehicles("limit 2", conn)
-		for _, vehicle := range vehicles {
-			fmt.Println(vehicle)
-		}
+	fmt.Println("-------------")
+	fmt.Println("drivers daily")
+	dailyDrivers := db.QueryDriverDailyStatus("limit 2", conn)
+	driversLatest := output.TransformDailyDrivers(dailyDrivers)
+	output.WriteLatestTrackingStatusToFile("output_daily_drivers.json", driversLatest)
 
-		fmt.Println("-------------")
-		fmt.Println("drivers daily")
-		driversDaily := db.QueryDriverDailyStatus("limit 2", conn)
-		for _, driverDaily := range driversDaily {
-			fmt.Println(driverDaily)
-		}
-
-		fmt.Println("-------------")
-		fmt.Println("vehicles daily")
-		vehiclesDaily := db.QueryVehicleDailyStatus("limit 2", conn)
-		for _, vehicleDaily := range vehiclesDaily {
-			fmt.Println(vehicleDaily)
-		} */
+	fmt.Println("-------------")
+	fmt.Println("vehicles daily")
+	dailyVehicles := db.QueryVehicleDailyStatus("limit 2", conn)
+	vehiclesLatest := output.TransformDailyVehicles(dailyVehicles)
+	output.WriteLatestTrackingStatusToFile("output_daily_vehicles.json", vehiclesLatest)
 }

@@ -33,11 +33,36 @@ func transformDriver(location db.TrackingLocationDriver) TrackingLocation {
 		Location:     Location{Latitude: location.Latitude, Longitude: location.Longitude}}
 }
 
+func transformDailyDriver(latest db.TrackingDriverDailyStatus) LatestTrackingStatus {
+	date := Date{Day: 0, Month: 0, Year: 0}
+
+	result := LatestTrackingStatus{Date: date, Location: transformDriver(latest.Location)}
+	
+	var batteryLevel *FloatValue = nil
+	if latest.BatteryLevel.Valid {
+		batteryLevel = &FloatValue{Value: latest.BatteryLevel.Float64}
+	}
+
+	result.Location.BatteryLevel = batteryLevel
+
+	return result
+}
+
 // TransformDrivers turns driver tracking status into TrackingLocations
 func TransformDrivers(locations []db.TrackingLocationDriver) []TrackingLocation {
 	var results []TrackingLocation
 	for _, location := range locations {
 		results = append(results, transformDriver(location))
+	}
+
+	return results
+}
+
+// TransformDailyDrivers turns driver latest  tracking status into LatestTrackingStatus
+func TransformDailyDrivers(dailies []db.TrackingDriverDailyStatus) []LatestTrackingStatus {
+	var results []LatestTrackingStatus
+	for _, daily := range dailies {
+		results = append(results, transformDailyDriver(daily))
 	}
 
 	return results
