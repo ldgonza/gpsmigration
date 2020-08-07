@@ -9,18 +9,24 @@ import (
 
 // TrackingLocationVehicle row
 type TrackingLocationVehicle struct {
-	created   string
-	modified  string
-	id        string
-	timestamp string
-	latitude  float32
-	longitude float32
-	vehicleID int
-	alert     sql.NullString
+	Created   string
+	Modified  string
+	ID        string
+	Timestamp string
+	Latitude  float32
+	Longitude float32
+	VehicleID int
+	Alert     sql.NullString
 }
 
 // QueryVehicles executes a query for vehicles and returns the results
-func QueryVehicles(query string, conn *sql.DB) []TrackingLocationVehicle {
+func QueryVehicles(where string, conn *sql.DB) []TrackingLocationVehicle {
+	baseQuery := "select l.created, l.modified, l.id, l.timestamp, l.latitude, l.longitude, l.vehicle_id, l.alert "
+	baseQuery += "from "
+	baseQuery += "tracking_location l "
+
+	query := baseQuery + " " + where
+
 	rows, err := conn.Query(query)
 	if err != nil {
 		panic(err)
@@ -32,7 +38,7 @@ func QueryVehicles(query string, conn *sql.DB) []TrackingLocationVehicle {
 
 	for rows.Next() {
 		var row TrackingLocationVehicle
-		err = rows.Scan(&row.created, &row.modified, &row.id, &row.timestamp, &row.latitude, &row.longitude, &row.vehicleID, &row.alert)
+		err = rows.Scan(&row.Created, &row.Modified, &row.ID, &row.Timestamp, &row.Latitude, &row.Longitude, &row.VehicleID, &row.Alert)
 		if err != nil {
 			// handle this error
 			panic(err)

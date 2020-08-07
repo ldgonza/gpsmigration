@@ -9,19 +9,26 @@ import (
 
 // TrackingLocationDriver row
 type TrackingLocationDriver struct {
-	created      string
-	modified     string
-	uuid         string
-	timestamp    string
-	latitude     float32
-	longitude    float32
-	driverID     int
-	accuracy     sql.NullFloat64
-	activityType sql.NullString
+	Created      string
+	Modified     string
+	UUID         string
+	Timestamp    string
+	Latitude     float32
+	Longitude    float32
+	DriverID     int
+	Accuracy     sql.NullFloat64
+	ActivityType sql.NullString
 }
 
 // QueryDrivers executes a query for drivers and returns the results
-func QueryDrivers(query string, conn *sql.DB) []TrackingLocationDriver {
+func QueryDrivers(where string, conn *sql.DB) []TrackingLocationDriver {
+	baseQuery := "select "
+	baseQuery += "l.created, l.modified, l.uuid, l.timestamp, l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
+	baseQuery += "from "
+	baseQuery += "tracking_locationdriver l "
+
+	query := baseQuery + " " + where
+
 	rows, err := conn.Query(query)
 	if err != nil {
 		panic(err)
@@ -33,7 +40,7 @@ func QueryDrivers(query string, conn *sql.DB) []TrackingLocationDriver {
 
 	for rows.Next() {
 		var row TrackingLocationDriver
-		err = rows.Scan(&row.created, &row.modified, &row.uuid, &row.timestamp, &row.latitude, &row.longitude, &row.driverID, &row.accuracy, &row.activityType)
+		err = rows.Scan(&row.Created, &row.Modified, &row.UUID, &row.Timestamp, &row.Latitude, &row.Longitude, &row.DriverID, &row.Accuracy, &row.ActivityType)
 		if err != nil {
 			// handle this error
 			panic(err)
