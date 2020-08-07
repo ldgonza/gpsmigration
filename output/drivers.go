@@ -34,10 +34,10 @@ func transformDriver(location db.TrackingLocationDriver) TrackingLocation {
 }
 
 func transformDailyDriver(latest db.TrackingDriverDailyStatus) LatestTrackingStatus {
-	date := Date{Day: 0, Month: 0, Year: 0}
+	date := getDate(latest.Date)
 
 	result := LatestTrackingStatus{Date: date, Location: transformDriver(latest.Location)}
-	
+
 	var batteryLevel *FloatValue = nil
 	if latest.BatteryLevel.Valid {
 		batteryLevel = &FloatValue{Value: latest.BatteryLevel.Float64}

@@ -3,6 +3,7 @@ package output
 import (
 	"encoding/json"
 	"os"
+	"strconv"
 )
 
 // StringValue a string value
@@ -62,6 +63,27 @@ type TrackingLocationCollection struct {
 // LatestTrackingStatusCollection represents the collection contents with the collection name
 type LatestTrackingStatusCollection struct {
 	LatestTrackingStatus []LatestTrackingStatus `json:"latest_tracking_status"`
+}
+
+func getDate(datestr string) Date {
+	year, err := strconv.Atoi(datestr[0:4])
+	if err != nil {
+		panic(err)
+	}
+
+	month, err := strconv.Atoi(datestr[5:7])
+
+	if err != nil {
+		panic(err)
+	}
+
+	day, err := strconv.Atoi(datestr[8:10])
+
+	if err != nil {
+		panic(err)
+	}
+
+	return Date{Day: day, Month: month, Year: year}
 }
 
 // WriteLocationsToFile writes outputs to files

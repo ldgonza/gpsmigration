@@ -26,7 +26,7 @@ func transformVehicle(location db.TrackingLocationVehicle) TrackingLocation {
 }
 
 func transformDailyVehicle(latest db.TrackingVehicleDailyStatus) LatestTrackingStatus {
-	date := Date{Day: 0, Month: 0, Year: 0}
+	date := getDate(latest.Date)
 
 	result := LatestTrackingStatus{Date: date, Location: transformVehicle(latest.Location)}
 
