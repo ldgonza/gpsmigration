@@ -25,8 +25,8 @@ type Date struct {
 
 // Timestamp represents a unix epoch timestamp
 type Timestamp struct {
-	Seconds int `json:"seconds"`
-	Nanos   int `json:"nanos"`
+	Seconds int64 `json:"seconds"`
+	Nanos   int32 `json:"nanos"`
 }
 
 // LatestTrackingStatus represents last tracking status for the day

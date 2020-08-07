@@ -18,7 +18,7 @@ func transformDriver(location db.TrackingLocationDriver) TrackingLocation {
 		activityType = &upper
 	}
 
-	timestamp := Timestamp{Seconds: 0, Nanos: 0}
+	timestamp := parseTimestamp(location.Timestamp)
 
 	return TrackingLocation{
 		ID:           nil,

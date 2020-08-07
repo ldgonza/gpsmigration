@@ -10,7 +10,7 @@ func transformVehicle(location db.TrackingLocationVehicle) TrackingLocation {
 		alert = &StringValue{Value: location.Alert.String}
 	}
 
-	timestamp := Timestamp{Seconds: 0, Nanos: 0}
+	timestamp := parseTimestamp(location.Timestamp)
 
 	return TrackingLocation{
 		ID:           nil,
