@@ -2,16 +2,17 @@ package work
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/magiconair/properties"
+	"gitlab.com/simpliroute/gps-migration-to-json/db"
 )
 
 // Work processes the migration.
 func Work(i int) {
-	time.Sleep(time.Second)
-	fmt.Println(i)
-	p := properties.MustLoadFile("connection.properties", properties.UTF8)
-	x, _ := p.Get("x")
-	fmt.Println(x)
+	conn := db.Connect()
+	defer db.Close(conn)
+	vehicles := db.QueryVehicles("select * from tracking_location limit 2", conn)
+
+	for _, vehicle := range vehicles {
+		fmt.Println(vehicle)
+	}
 }
