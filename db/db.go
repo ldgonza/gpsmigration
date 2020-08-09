@@ -22,7 +22,7 @@ func getProperty(p *properties.Properties, name string) string {
 
 // Connect returns a DB connection
 func Connect() *sql.DB {
-	p := properties.MustLoadFile("connection.properties", properties.UTF8)
+	p := properties.MustLoadFile("application.properties", properties.UTF8)
 
 	var (
 		host     = getProperty(p, "db.host")

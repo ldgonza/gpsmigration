@@ -1,8 +1,10 @@
 package main
 
 import (
-	"flag"
+	"database/sql"
 
+	"github.com/magiconair/properties"
+	"gitlab.com/simpliroute/gps-migration-to-json/db"
 	"gitlab.com/simpliroute/gps-migration-to-json/work"
 )
 
@@ -13,21 +15,25 @@ func min(x, y int) int {
 	return y
 }
 
-func worker(i int, done chan bool) {
-	work.Work(i)
+func worker(i int, conn *sql.DB, p *properties.Properties, done chan bool) {
+	work.Work(i, conn, p)
 	done <- true
 }
 
 func main() {
-	var batchSize, batchCount, firstID, lastID, concurrency int
+	p := properties.MustLoadFile("application.properties", properties.UTF8)
 
-	flag.IntVar(&batchSize, "batchSize", 10, "batch size")
-	flag.IntVar(&batchCount, "batchCount", 0, "total number of batches to run")
-	flag.IntVar(&firstID, "firstId", 0, "first ID")
-	flag.IntVar(&lastID, "lastId", 0, "last ID")
-	flag.IntVar(&concurrency, "concurrency", 1, "number of parallel batches")
+	var (
+		batchCount  = int(p.MustGetUint("operation.batch.count"))
+		concurrency = int(p.MustGetUint("operation.concurrency"))
+		readSource  = p.MustGetBool("operation.source.read")
+	)
 
-	flag.Parse()
+	var conn *sql.DB = nil
+	if readSource {
+		conn = db.Connect()
+		defer db.Close(conn)
+	}
 
 	done := make(chan bool, 1)
 
@@ -37,7 +43,7 @@ func main() {
 	// Init workers
 	for i := 0; i < workerCount; i++ {
 		currentBatch = i
-		go worker(currentBatch, done)
+		go worker(currentBatch, conn, p, done)
 	}
 
 	// Restart when done until complete
@@ -54,7 +60,7 @@ func main() {
 
 		currentBatch++
 		if batchCount == 0 || currentBatch < batchCount {
-			go worker(currentBatch, done)
+			go worker(currentBatch, conn, p, done)
 		}
 	}
 }

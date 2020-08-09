@@ -16,3 +16,8 @@
 
 # VScode
 launch.json
+
+# Export results
+results/
+
+application.properties
