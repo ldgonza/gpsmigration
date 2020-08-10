@@ -55,6 +55,13 @@ func createDir(dir string) {
 	}
 }
 
+func moveFile(source string, dest string) {
+	err := os.Rename(source, dest)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -68,87 +75,76 @@ func dolog(i int, message string) {
 }
 
 // Work processes the migration and returns true if nothing else to do
-func Work(i int, conn *sql.DB, p *properties.Properties) bool {
+func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			dolog(i, fmt.Sprint("Fatal! ", r))
+		}
+
+		done = true
+	}()
 
 	dolog(i, "Starting")
 
 	var (
 		batchSize   = int(p.MustGetUint("operation.batch.size"))
-		read        = p.MustGetBool("operation.source.read")
-		write       = p.MustGetBool("operation.destination.write")
-		delete      = p.MustGetBool("operation.file.delete")
 		tableString = p.MustGetString("operation.table")
 	)
 
 	table := StrToTable(tableString)
 
 	dir := "results/" + string(table)
+	readyDir := "results/ready/" + string(table)
 	createDir(dir)
+	createDir(readyDir)
+
 	filename := dir + "/" + strconv.Itoa(i) + ".json"
+	readyFilename := readyDir + "/" + strconv.Itoa(i) + ".json"
 
 	doneReading := true
-	doneWriting := true
 
-	if read {
-		dolog(i, "Reading")
-		offset := i * int(batchSize)
-		where := " limit " + strconv.Itoa(batchSize) + " offset " + strconv.Itoa(offset)
+	dolog(i, "Reading")
+	offset := i * int(batchSize)
+	where := " limit " + strconv.Itoa(batchSize) + " offset " + strconv.Itoa(offset)
 
-		var locations []output.TrackingLocation
-		var latestStatus []output.LatestTrackingStatus
+	var locations []output.TrackingLocation
+	var latestStatus []output.LatestTrackingStatus
 
-		if table == Drivers {
-			drivers := db.QueryDrivers(where, conn)
-			locations = output.TransformDrivers(drivers)
-			dolog(i, fmt.Sprintf("Length %d", len(locations)))
-		} else if table == Vehicles {
-			vehicles := db.QueryVehicles(where, conn, i)
-			locations = output.TransformVehicles(vehicles)
-			dolog(i, fmt.Sprintf("Length %d", len(locations)))
-		} else if table == DriversDaily {
-			dailyDrivers := db.QueryDriverDailyStatus(where, conn)
-			latestStatus = output.TransformDailyDrivers(dailyDrivers)
-			dolog(i, fmt.Sprintf("Length %d", len(locations)))
-		} else if table == VehiclesDaily {
-			dailyVehicles := db.QueryVehicleDailyStatus(where, conn)
-			latestStatus = output.TransformDailyVehicles(dailyVehicles)
-			dolog(i, fmt.Sprintf("Length %d", len(locations)))
-		} else {
-			panic("Unimplemented table!: " + string(table))
-		}
-
-		if len(latestStatus) > 0 {
-			fmt.Println("Preparing JSON " + filename)
-			output.WriteLatestTrackingStatusToFile(filename, latestStatus)
-			doneReading = false
-		}
-
-		if len(locations) > 0 {
-			fmt.Println("Preparing JSON " + filename)
-			output.WriteLocationsToFile(filename, locations)
-			doneReading = false
-		}
-	}
-
-	if write {
-		if !fileExists(filename) {
-			dolog(i, "No more files! "+filename)
-		} else {
-			doneWriting = false
-			dolog(i, "Writing to destinatino DB: "+filename)
-			if delete {
-				fmt.Println("deleting file")
-			}
-		}
-	}
-
-	done := false
-
-	if read {
-		done = doneReading
+	if table == Drivers {
+		drivers := db.QueryDrivers(where, conn)
+		locations = output.TransformDrivers(drivers)
+		dolog(i, fmt.Sprintf("Length %d", len(locations)))
+	} else if table == Vehicles {
+		vehicles := db.QueryVehicles(where, conn)
+		locations = output.TransformVehicles(vehicles)
+		dolog(i, fmt.Sprintf("Length %d", len(locations)))
+	} else if table == DriversDaily {
+		dailyDrivers := db.QueryDriverDailyStatus(where, conn)
+		latestStatus = output.TransformDailyDrivers(dailyDrivers)
+		dolog(i, fmt.Sprintf("Length %d", len(locations)))
+	} else if table == VehiclesDaily {
+		dailyVehicles := db.QueryVehicleDailyStatus(where, conn)
+		latestStatus = output.TransformDailyVehicles(dailyVehicles)
+		dolog(i, fmt.Sprintf("Length %d", len(locations)))
 	} else {
-		read = doneWriting
+		panic("Unimplemented table!: " + string(table))
 	}
+
+	if len(latestStatus) > 0 {
+		fmt.Println("Preparing JSON " + filename)
+		output.WriteLatestTrackingStatusToFile(filename, latestStatus)
+		moveFile(filename, readyFilename)
+		doneReading = false
+	}
+
+	if len(locations) > 0 {
+		fmt.Println("Preparing JSON " + filename)
+		output.WriteLocationsToFile(filename, locations)
+		moveFile(filename, readyFilename)
+		doneReading = false
+	}
+
+	done = doneReading
 
 	dolog(i, "Done: "+strconv.FormatBool(done))
 	return done

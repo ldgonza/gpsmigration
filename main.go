@@ -25,14 +25,11 @@ func main() {
 	var (
 		batchCount  = int(p.MustGetUint("operation.batch.count"))
 		concurrency = int(p.MustGetUint("operation.concurrency"))
-		readSource  = p.MustGetBool("operation.source.read")
 	)
 
 	var conn *sql.DB = nil
-	if readSource {
-		conn = db.Connect()
-		defer db.Close(conn)
-	}
+	conn = db.Connect()
+	defer db.Close(conn)
 
 	done := make(chan bool, 1)
 

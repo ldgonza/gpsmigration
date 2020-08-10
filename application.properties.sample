@@ -6,16 +6,6 @@ db.name=database
 
 # Drivers, Vehicles, DriversDaily, VehiclesDaily
 operation.table=Vehicles
-
-# Read from DB
-operation.source.read=true
-
-# Write to firestore
-operation.destination.write=true
-
-# Delete json file when done writing to firestore
-operation.file.delete=false
-
 operation.batch.count=4
 operation.batch.size=4
 operation.concurrency=1
