@@ -55,13 +55,6 @@ func createDir(dir string) {
 	}
 }
 
-func moveFile(source string, dest string) {
-	err := os.Rename(source, dest)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -89,18 +82,15 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	var (
 		batchSize   = int(p.MustGetUint("operation.batch.size"))
 		tableString = p.MustGetString("operation.table")
+		bucketName  = p.MustGetString("bucket.name")
 	)
 
 	table := StrToTable(tableString)
 
 	dir := "results/" + string(table)
-	readyDir := "results/ready/" + string(table)
 	createDir(dir)
-	createDir(readyDir)
 
 	filename := dir + "/" + strconv.Itoa(i) + ".json"
-	readyFilename := readyDir + "/" + strconv.Itoa(i) + ".json"
-
 	doneReading := true
 
 	dolog(i, "Reading")
@@ -132,15 +122,15 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 
 	if len(latestStatus) > 0 {
 		fmt.Println("Preparing JSON " + filename)
-		output.WriteLatestTrackingStatusToFile(filename, latestStatus)
-		moveFile(filename, readyFilename)
+		//output.WriteLatestTrackingStatusToFile(filename, latestStatus)
+		output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
 		doneReading = false
 	}
 
 	if len(locations) > 0 {
 		fmt.Println("Preparing JSON " + filename)
-		output.WriteLocationsToFile(filename, locations)
-		moveFile(filename, readyFilename)
+		// output.WriteLocationsToFile(filename, locations)
+		output.WriteLocationsToCloudStorage(bucketName, filename, locations)
 		doneReading = false
 	}
 
