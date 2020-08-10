@@ -16,8 +16,7 @@ func min(x, y int) int {
 }
 
 func worker(i int, conn *sql.DB, p *properties.Properties, done chan bool) {
-	work.Work(i, conn, p)
-	done <- true
+	done <- work.Work(i, conn, p)
 }
 
 func main() {
@@ -49,18 +48,29 @@ func main() {
 	// Restart when done until complete
 	doneBatchCount := 0
 	complete := false
+	wrapUp := false
+	result := false
 	for !complete {
-		<-done
-		doneBatchCount++
-
-		if batchCount > 0 && doneBatchCount == batchCount {
+		if wrapUp && doneBatchCount >= workerCount {
 			complete = true
 			break
 		}
 
-		currentBatch++
-		if batchCount == 0 || currentBatch < batchCount {
-			go worker(currentBatch, conn, p, done)
+		result = <-done
+		wrapUp = result || wrapUp
+
+		doneBatchCount++
+
+		if batchCount > 0 && doneBatchCount >= batchCount {
+			complete = true
+			break
+		}
+
+		if !wrapUp {
+			currentBatch++
+			if batchCount == 0 || currentBatch < batchCount {
+				go worker(currentBatch, conn, p, done)
+			}
 		}
 	}
 }
