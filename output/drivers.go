@@ -1,6 +1,7 @@
 package output
 
 import (
+	"fmt"
 	"strings"
 
 	"gitlab.com/simpliroute/gps-migration-to-json/db"
@@ -44,6 +45,7 @@ func transformDailyDriver(latest db.TrackingDriverDailyStatus) LatestTrackingSta
 	}
 
 	result.Location.BatteryLevel = batteryLevel
+	result.ID = fmt.Sprintf("DRIVER-%d-%[2]d%[2]d%[4]d", latest.DriverID, date.Day, date.Month, date.Year)
 
 	return result
 }
