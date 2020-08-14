@@ -72,9 +72,8 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			dolog(i, fmt.Sprint("Fatal! ", r))
+			done = true
 		}
-
-		done = true
 	}()
 
 	dolog(i, "Starting")
