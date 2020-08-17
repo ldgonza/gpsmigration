@@ -42,6 +42,9 @@ type Location struct {
 	Longitude float32 `json:"longitude"`
 }
 
+// ActivityTypeNotSet null value for activity type
+var ActivityTypeNotSet string = "ACTIVITY_TYPE_NOT_SET"
+
 // TrackingLocation represents a tracking location
 type TrackingLocation struct {
 	ID           *int         `json:"id,omitempty"`

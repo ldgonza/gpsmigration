@@ -22,7 +22,7 @@ func transformVehicle(location db.TrackingLocationVehicle) TrackingLocation {
 		Alert:        alert,
 		ProviderName: nil,
 		BatteryLevel: nil,
-		ActivityType: nil,
+		ActivityType: &ActivityTypeNotSet,
 		Timestamp:    timestamp,
 		Location:     Location{Latitude: location.Latitude, Longitude: location.Longitude}}
 }

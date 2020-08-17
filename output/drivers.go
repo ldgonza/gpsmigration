@@ -13,7 +13,7 @@ func transformDriver(location db.TrackingLocationDriver) TrackingLocation {
 		accuracy = &FloatValue{Value: location.Accuracy.Float64}
 	}
 
-	var activityType *string = nil
+	var activityType *string = &ActivityTypeNotSet
 	if location.ActivityType.Valid {
 		upper := strings.ToUpper(location.ActivityType.String)
 		activityType = &upper
