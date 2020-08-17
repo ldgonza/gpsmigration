@@ -21,3 +21,5 @@ launch.json
 results/
 
 application.properties
+
+sa-key.json
