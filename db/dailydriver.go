@@ -24,7 +24,7 @@ type TrackingDriverDailyStatus struct {
 func QueryDriverDailyStatus(where string, conn *sql.DB) []TrackingDriverDailyStatus {
 	baseQuery := "select d.id "
 	baseQuery += ", d.created, d.modified, d.date, d.battery_level, d.account_id, d.driver_id, d.location_id "
-	baseQuery += ", l.created, l.modified, l.uuid, l.timestamp, l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
+	baseQuery += ", l.created, l.modified, l.uuid, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
 	baseQuery += "from "
 	baseQuery += "tracking_driverdailystatus d "
 	baseQuery += "inner join tracking_locationdriver l on l.uuid = d.location_id "

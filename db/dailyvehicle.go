@@ -23,7 +23,7 @@ type TrackingVehicleDailyStatus struct {
 func QueryVehicleDailyStatus(where string, conn *sql.DB) []TrackingVehicleDailyStatus {
 	baseQuery := "select d.id "
 	baseQuery += ", d.created, d.modified, d.date, d.provider_name, d.location_id, d.vehicle_id "
-	baseQuery += ", l.created, l.modified, l.id, l.timestamp, l.latitude, l.longitude, l.vehicle_id, l.alert "
+	baseQuery += ", l.created, l.modified, l.id, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.vehicle_id, l.alert "
 	baseQuery += "from "
 	baseQuery += "tracking_vehicledailystatus d "
 	baseQuery += "inner join tracking_location l on l.id = d.location_id "
