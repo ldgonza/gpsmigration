@@ -20,12 +20,12 @@ type TrackingLocationVehicle struct {
 }
 
 // QueryVehicles executes a query for vehicles and returns the results
-func QueryVehicles(where string, conn *sql.DB) []TrackingLocationVehicle {
+func QueryVehicles(limit string, conn *sql.DB) []TrackingLocationVehicle {
 	baseQuery := "select l.created, l.modified, l.id, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.vehicle_id, l.alert "
 	baseQuery += "from "
 	baseQuery += "tracking_location l "
 
-	query := baseQuery + " " + where
+	query := baseQuery + " order by l.id asc  " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

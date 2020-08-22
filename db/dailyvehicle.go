@@ -20,7 +20,7 @@ type TrackingVehicleDailyStatus struct {
 }
 
 // QueryVehicleDailyStatus executes a query for Vehicles and returns the results
-func QueryVehicleDailyStatus(where string, conn *sql.DB) []TrackingVehicleDailyStatus {
+func QueryVehicleDailyStatus(limit string, conn *sql.DB) []TrackingVehicleDailyStatus {
 	baseQuery := "select d.id "
 	baseQuery += ", d.created, d.modified, d.date, d.provider_name, d.location_id, d.vehicle_id "
 	baseQuery += ", l.created, l.modified, l.id, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.vehicle_id, l.alert "
@@ -28,7 +28,7 @@ func QueryVehicleDailyStatus(where string, conn *sql.DB) []TrackingVehicleDailyS
 	baseQuery += "tracking_vehicledailystatus d "
 	baseQuery += "inner join tracking_location l on l.id = d.location_id "
 
-	query := baseQuery + " " + where
+	query := baseQuery + " order by d.id asc " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

@@ -21,7 +21,7 @@ type TrackingDriverDailyStatus struct {
 }
 
 // QueryDriverDailyStatus executes a query for drivers and returns the results
-func QueryDriverDailyStatus(where string, conn *sql.DB) []TrackingDriverDailyStatus {
+func QueryDriverDailyStatus(limit string, conn *sql.DB) []TrackingDriverDailyStatus {
 	baseQuery := "select d.id "
 	baseQuery += ", d.created, d.modified, d.date, d.battery_level, d.account_id, d.driver_id, d.location_id "
 	baseQuery += ", l.created, l.modified, l.uuid, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
@@ -29,7 +29,7 @@ func QueryDriverDailyStatus(where string, conn *sql.DB) []TrackingDriverDailySta
 	baseQuery += "tracking_driverdailystatus d "
 	baseQuery += "inner join tracking_locationdriver l on l.uuid = d.location_id "
 
-	query := baseQuery + " " + where
+	query := baseQuery + " order by d.id asc " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

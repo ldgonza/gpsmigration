@@ -21,13 +21,13 @@ type TrackingLocationDriver struct {
 }
 
 // QueryDrivers executes a query for drivers and returns the results
-func QueryDrivers(where string, conn *sql.DB) []TrackingLocationDriver {
+func QueryDrivers(limit string, conn *sql.DB) []TrackingLocationDriver {
 	baseQuery := "select "
 	baseQuery += "l.created, l.modified, l.uuid, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
 	baseQuery += "from "
 	baseQuery += "tracking_locationdriver l "
 
-	query := baseQuery + " " + where
+	query := baseQuery + " order by l.uuid asc " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {
