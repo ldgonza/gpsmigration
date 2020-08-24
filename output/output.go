@@ -31,7 +31,7 @@ type Timestamp struct {
 
 // LatestTrackingStatus represents last tracking status for the day
 type LatestTrackingStatus struct {
-	ID       string           `json:"-"`
+	ID       string           `json:"id"`
 	Date     Date             `json:"date"`
 	Location TrackingLocation `json:"latest_location"`
 }
@@ -66,7 +66,7 @@ type TrackingLocationCollection struct {
 
 // LatestTrackingStatusCollection represents the collection contents with the collection name
 type LatestTrackingStatusCollection struct {
-	LatestTrackingStatus map[string]LatestTrackingStatus `json:"latest_tracking_status"`
+	LatestTrackingStatus []LatestTrackingStatus `json:"latest_tracking_status"`
 }
 
 func getDate(datestr string) Date {
@@ -104,17 +104,11 @@ func WriteLocationsToFile(filename string, locations []TrackingLocation) {
 
 // WriteLatestTrackingStatusToFile writes outputs to files
 func WriteLatestTrackingStatusToFile(filename string, locations []LatestTrackingStatus) {
-	// Turn list to a an ID:LatestStatus map
-	m := make(map[string]LatestTrackingStatus)
-	for _, latest := range locations {
-		m[latest.ID] = latest
-	}
-
 	file, _ := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	defer file.Close()
 	encoder := json.NewEncoder(file)
 
-	err := encoder.Encode(LatestTrackingStatusCollection{m})
+	err := encoder.Encode(LatestTrackingStatusCollection{locations})
 	if err != nil {
 		panic(err)
 	}

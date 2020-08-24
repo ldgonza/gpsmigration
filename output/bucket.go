@@ -37,12 +37,6 @@ func WriteLocationsToCloudStorage(bucketName string, fileName string, locations 
 
 // WriteLatestTrackingStatusToCloudStorage writes latest status to cloud storage
 func WriteLatestTrackingStatusToCloudStorage(bucketName string, fileName string, locations []LatestTrackingStatus) error {
-	// Turn list to a an ID:LatestStatus map
-	m := make(map[string]LatestTrackingStatus)
-	for _, latest := range locations {
-		m[latest.ID] = latest
-	}
-
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		panic(err)
@@ -54,7 +48,7 @@ func WriteLatestTrackingStatusToCloudStorage(bucketName string, fileName string,
 	wc.ContentType = "application/json"
 
 	encoder := json.NewEncoder(wc)
-	if err := encoder.Encode(LatestTrackingStatusCollection{m}); err != nil {
+	if err := encoder.Encode(LatestTrackingStatusCollection{locations}); err != nil {
 		panic(err)
 	}
 

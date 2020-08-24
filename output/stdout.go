@@ -18,15 +18,9 @@ func WriteLocationsToConsole(locations []TrackingLocation) {
 
 // WriteLatestTrackingStatusToConsole writes outputs to console
 func WriteLatestTrackingStatusToConsole(locations []LatestTrackingStatus) {
-	// Turn list to a an ID:LatestStatus map
-	m := make(map[string]LatestTrackingStatus)
-	for _, latest := range locations {
-		m[latest.ID] = latest
-	}
-
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "    ")
-	err := encoder.Encode(LatestTrackingStatusCollection{m})
+	err := encoder.Encode(LatestTrackingStatusCollection{locations})
 
 	if err != nil {
 		panic(err)
