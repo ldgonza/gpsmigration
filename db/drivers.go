@@ -13,8 +13,8 @@ type TrackingLocationDriver struct {
 	Modified     string
 	UUID         string
 	Timestamp    string
-	Latitude     float32
-	Longitude    float32
+	Latitude     float64
+	Longitude    float64
 	DriverID     int
 	Accuracy     sql.NullFloat64
 	ActivityType sql.NullString

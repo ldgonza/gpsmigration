@@ -38,8 +38,8 @@ type LatestTrackingStatus struct {
 
 // Location represents a GPS location
 type Location struct {
-	Latitude  float32 `json:"latitude"`
-	Longitude float32 `json:"longitude"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 // ActivityTypeNotSet null value for activity type

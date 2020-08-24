@@ -13,8 +13,8 @@ type TrackingLocationVehicle struct {
 	Modified  string
 	ID        string
 	Timestamp string
-	Latitude  float32
-	Longitude float32
+	Latitude  float64
+	Longitude float64
 	VehicleID int
 	Alert     sql.NullString
 }
