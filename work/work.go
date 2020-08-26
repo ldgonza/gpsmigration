@@ -6,11 +6,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/magiconair/properties"
-	"gitlab.com/simpliroute/gps-migration-to-json/output"
 
 	"gitlab.com/simpliroute/gps-migration-to-json/db"
+	"gitlab.com/simpliroute/gps-migration-to-json/output"
 )
 
 // Table what table to opreate on
@@ -64,7 +65,8 @@ func fileExists(filename string) bool {
 }
 
 func dolog(i int, message string) {
-	fmt.Println("Batch", i, "-", message)
+	ts := time.Now().UnixNano()
+	fmt.Println(ts, "-", "Batch", i, "-", message)
 }
 
 // Work processes the migration and returns true if nothing else to do
@@ -82,6 +84,7 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 		batchSize   = int(p.MustGetUint("operation.batch.size"))
 		tableString = p.MustGetString("operation.table")
 		bucketName  = p.MustGetString("bucket.name")
+		outputType  = p.MustGetString("output.type")
 	)
 
 	table := StrToTable(tableString)
@@ -120,16 +123,28 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	}
 
 	if len(latestStatus) > 0 {
-		fmt.Println("Preparing JSON " + filename)
-		//output.WriteLatestTrackingStatusToFile(filename, latestStatus)
-		output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
+		dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+
+		if outputType == "file" {
+			output.WriteLatestTrackingStatusToFile(filename, latestStatus)
+		} else if outputType == "gcp" {
+			output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
+		} else if outputType == "console" {
+			output.WriteLatestTrackingStatusToConsole(latestStatus)
+		}
 		doneReading = false
 	}
 
 	if len(locations) > 0 {
-		fmt.Println("Preparing JSON " + filename)
-		// output.WriteLocationsToFile(filename, locations)
-		output.WriteLocationsToCloudStorage(bucketName, filename, locations)
+		dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+
+		if outputType == "file" {
+			output.WriteLocationsToFile(filename, locations)
+		} else if outputType == "gcp" {
+			output.WriteLocationsToCloudStorage(bucketName, filename, locations)
+		} else if outputType == "console" {
+			output.WriteLocationsToConsole(locations)
+		}
 		doneReading = false
 	}
 
