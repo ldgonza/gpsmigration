@@ -27,7 +27,7 @@ func QueryDrivers(limit string, conn *sql.DB) []TrackingLocationDriver {
 	baseQuery += "from "
 	baseQuery += "tracking_locationdriver l "
 
-	query := baseQuery + " order by l.uuid asc " + limit
+	query := baseQuery + " order by l.timestamp asc " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

@@ -25,7 +25,7 @@ func QueryVehicles(limit string, conn *sql.DB) []TrackingLocationVehicle {
 	baseQuery += "from "
 	baseQuery += "tracking_location l "
 
-	query := baseQuery + " order by l.id asc  " + limit
+	query := baseQuery + " order by l.timestamp asc  " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {
