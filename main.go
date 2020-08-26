@@ -34,7 +34,12 @@ func main() {
 	done := make(chan bool, 1)
 
 	currentBatch := 0
-	workerCount := min(batchCount, concurrency)
+
+	workerCount := concurrency
+
+	if batchCount > 0 {
+		workerCount = min(batchCount, concurrency)
+	}
 
 	// Init workers
 	for i := 0; i < workerCount; i++ {
