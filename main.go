@@ -15,7 +15,12 @@ func min(x, y int) int {
 	return y
 }
 
-func worker(i int, conn *sql.DB, p *properties.Properties, done chan bool) {
+func worker(firstBatch int, i int, conn *sql.DB, p *properties.Properties, done chan bool) {
+	if i < firstBatch {
+		done <- false
+		return
+	}
+
 	done <- work.Work(i, conn, p)
 }
 
@@ -25,6 +30,7 @@ func main() {
 	var (
 		batchCount  = int(p.MustGetUint("operation.batch.count"))
 		concurrency = int(p.MustGetUint("operation.concurrency"))
+		firstBatch  = int(p.MustGetUint("operation.first.batch"))
 	)
 
 	var conn *sql.DB = nil
@@ -44,7 +50,7 @@ func main() {
 	// Init workers
 	for i := 0; i < workerCount; i++ {
 		currentBatch = i
-		go worker(currentBatch, conn, p, done)
+		go worker(firstBatch, currentBatch, conn, p, done)
 	}
 
 	// Restart when done until complete
@@ -71,7 +77,7 @@ func main() {
 		if !wrapUp {
 			currentBatch++
 			if batchCount == 0 || currentBatch < batchCount {
-				go worker(currentBatch, conn, p, done)
+				go worker(firstBatch, currentBatch, conn, p, done)
 			}
 		}
 	}
