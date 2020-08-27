@@ -81,23 +81,26 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	dolog(i, "Starting")
 
 	var (
-		batchSize   = int(p.MustGetUint("operation.batch.size"))
 		tableString = p.MustGetString("operation.table")
 		bucketName  = p.MustGetString("bucket.name")
 		outputType  = p.MustGetString("output.type")
+		fileSize    = int(p.MustGetUint("output.file.size"))
+		fileCount   = int(p.MustGetUint("output.files.per.batch"))
 	)
+
+	fileNumber := i * fileCount
+	readSize := fileCount * fileSize
 
 	table := StrToTable(tableString)
 
 	dir := "results/" + string(table)
 	createDir(dir)
-
-	filename := dir + "/" + strconv.Itoa(i) + ".json"
 	doneReading := true
 
 	dolog(i, "Reading")
-	offset := i * int(batchSize)
-	where := " limit " + strconv.Itoa(batchSize) + " offset " + strconv.Itoa(offset)
+	offset := i * int(readSize)
+	where := " limit " + strconv.Itoa(readSize) + " offset " + strconv.Itoa(offset)
+	dolog(i, where)
 
 	var locations []output.TrackingLocation
 	var latestStatus []output.LatestTrackingStatus
@@ -123,27 +126,57 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	}
 
 	if len(latestStatus) > 0 {
-		dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+		var buffer []output.TrackingLocation
+		filename := ""
+		for _, location := range locations {
+			if len(buffer) == 0 {
+				filename = dir + "/" + strconv.Itoa(fileNumber) + ".json"
+				dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+			}
 
-		if outputType == "file" {
-			output.WriteLatestTrackingStatusToFile(filename, latestStatus)
-		} else if outputType == "gcp" {
-			output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
-		} else if outputType == "console" {
-			output.WriteLatestTrackingStatusToConsole(latestStatus)
+			buffer = append(buffer, location)
+
+			if len(buffer) >= fileSize {
+				if outputType == "file" {
+					output.WriteLatestTrackingStatusToFile(filename, latestStatus)
+				} else if outputType == "gcp" {
+					output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
+				} else if outputType == "console" {
+					output.WriteLatestTrackingStatusToConsole(latestStatus)
+				}
+
+				buffer = nil
+				fileNumber++
+			}
+
 		}
 		doneReading = false
 	}
 
 	if len(locations) > 0 {
-		dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+		var buffer []output.TrackingLocation
+		filename := ""
+		for _, location := range locations {
+			if len(buffer) == 0 {
+				filename = dir + "/" + strconv.Itoa(fileNumber) + ".json"
+				dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
+			}
 
-		if outputType == "file" {
-			output.WriteLocationsToFile(filename, locations)
-		} else if outputType == "gcp" {
-			output.WriteLocationsToCloudStorage(bucketName, filename, locations)
-		} else if outputType == "console" {
-			output.WriteLocationsToConsole(locations)
+			buffer = append(buffer, location)
+
+			if len(buffer) >= fileSize {
+				if outputType == "file" {
+					output.WriteLocationsToFile(filename, buffer)
+				} else if outputType == "gcp" {
+					output.WriteLocationsToCloudStorage(bucketName, filename, buffer)
+				} else if outputType == "console" {
+					output.WriteLocationsToConsole(buffer)
+				}
+
+				buffer = nil
+				fileNumber++
+			}
+
 		}
 		doneReading = false
 	}
