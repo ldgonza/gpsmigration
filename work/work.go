@@ -128,7 +128,7 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	if len(latestStatus) > 0 {
 		var buffer []output.TrackingLocation
 		filename := ""
-		for _, location := range locations {
+		for curr, location := range locations {
 			if len(buffer) == 0 {
 				filename = dir + "/" + strconv.Itoa(fileNumber) + ".json"
 				dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
@@ -136,7 +136,7 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 
 			buffer = append(buffer, location)
 
-			if len(buffer) >= fileSize {
+			if len(buffer) >= fileSize || curr >= len(locations)-1 {
 				if outputType == "file" {
 					output.WriteLatestTrackingStatusToFile(filename, latestStatus)
 				} else if outputType == "gcp" {
@@ -154,9 +154,11 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	}
 
 	if len(locations) > 0 {
+
+		locations = locations[0:7]
 		var buffer []output.TrackingLocation
 		filename := ""
-		for _, location := range locations {
+		for curr, location := range locations {
 			if len(buffer) == 0 {
 				filename = dir + "/" + strconv.Itoa(fileNumber) + ".json"
 				dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
@@ -164,7 +166,7 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 
 			buffer = append(buffer, location)
 
-			if len(buffer) >= fileSize {
+			if len(buffer) >= fileSize || curr >= len(locations)-1 {
 				if outputType == "file" {
 					output.WriteLocationsToFile(filename, buffer)
 				} else if outputType == "gcp" {

@@ -58,8 +58,10 @@ func main() {
 	complete := false
 	wrapUp := false
 	result := false
+
+	wrappedUpCount := 0
 	for !complete {
-		if wrapUp && doneBatchCount >= workerCount {
+		if wrapUp && wrappedUpCount >= workerCount {
 			complete = true
 			break
 		}
@@ -68,6 +70,9 @@ func main() {
 		wrapUp = result || wrapUp
 
 		doneBatchCount++
+		if wrapUp {
+			wrappedUpCount++
+		}
 
 		if batchCount > 0 && doneBatchCount >= batchCount {
 			complete = true
