@@ -116,19 +116,19 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	} else if table == DriversDaily {
 		dailyDrivers := db.QueryDriverDailyStatus(where, conn)
 		latestStatus = output.TransformDailyDrivers(dailyDrivers)
-		dolog(i, fmt.Sprintf("Length %d", len(locations)))
+		dolog(i, fmt.Sprintf("Length %d", len(latestStatus)))
 	} else if table == VehiclesDaily {
 		dailyVehicles := db.QueryVehicleDailyStatus(where, conn)
 		latestStatus = output.TransformDailyVehicles(dailyVehicles)
-		dolog(i, fmt.Sprintf("Length %d", len(locations)))
+		dolog(i, fmt.Sprintf("Length %d", len(latestStatus)))
 	} else {
 		panic("Unimplemented table!: " + string(table))
 	}
 
 	if len(latestStatus) > 0 {
-		var buffer []output.TrackingLocation
+		var buffer []output.LatestTrackingStatus
 		filename := ""
-		for curr, location := range locations {
+		for curr, location := range latestStatus {
 			if len(buffer) == 0 {
 				filename = dir + "/" + strconv.Itoa(fileNumber) + ".json"
 				dolog(i, fmt.Sprintf("Preparing JSON %s", filename))
@@ -136,7 +136,7 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 
 			buffer = append(buffer, location)
 
-			if len(buffer) >= fileSize || curr >= len(locations)-1 {
+			if len(buffer) >= fileSize || curr >= len(latestStatus)-1 {
 				if outputType == "file" {
 					output.WriteLatestTrackingStatusToFile(filename, latestStatus)
 				} else if outputType == "gcp" {
@@ -154,7 +154,6 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	}
 
 	if len(locations) > 0 {
-
 		locations = locations[0:7]
 		var buffer []output.TrackingLocation
 		filename := ""
