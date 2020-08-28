@@ -29,21 +29,30 @@ func worker(firstBatch int, i int, conn *sql.DB, uploader *s3manager.Uploader, p
 }
 
 func main() {
-	start := time.Now()
-	defer func() {
-		duration := time.Since(start)
-		fmt.Println("Total Time Elapsed: ", duration.Seconds(), "s")
-	}()
-
 	p := properties.MustLoadFile("application.properties", properties.UTF8)
-
 	var (
 		batchCount  = int(p.MustGetUint("operation.batch.count"))
 		concurrency = int(p.MustGetUint("operation.concurrency"))
 		firstBatch  = int(p.MustGetUint("operation.first.batch"))
 		rampUpDelay = int(p.MustGetUint("operation.ramp.up.delay"))
 		outputType  = p.MustGetString("output.type")
+
+		fileSize  = int(p.MustGetUint("output.file.size"))
+		fileCount = int(p.MustGetUint("output.files.per.batch"))
 	)
+
+	start := time.Now()
+	doneBatchCount := 0
+
+	defer func() {
+		duration := time.Since(start)
+		records := (fileSize * fileCount * doneBatchCount)
+		throughput := float64(records) / duration.Seconds()
+
+		fmt.Println("Total Time Elapsed: ", duration.Seconds(), "s")
+		fmt.Println("Total records: ", records, "/s")
+		fmt.Println("Throughtput: ", throughput, "/s")
+	}()
 
 	var uploader *s3manager.Uploader
 
@@ -77,7 +86,6 @@ func main() {
 	}
 
 	// Restart when done until complete
-	doneBatchCount := 0
 	complete := false
 	wrapUp := false
 	result := false
