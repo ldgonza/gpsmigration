@@ -4,8 +4,20 @@ db.user=user
 db.pass=pass
 db.name=database
 
-# Drivers, Vehicles, DriversDaily, VehiclesDaily
 operation.table=Vehicles
-operation.batch.count=4
-operation.batch.size=4
+# operation.table=Drivers
+# operation.table=VehiclesDaily
+# operation.table=DriversDaily
+
+operation.ramp.up.delay=2
+operation.batch.count=0
 operation.concurrency=1
+operation.first.batch=0
+
+bucket.project=proj
+bucket.name=bucket
+
+output.file.size=4
+output.files.per.batch=2
+
+output.type=file

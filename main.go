@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/magiconair/properties"
 	"gitlab.com/simpliroute/gps-migration-to-json/db"
@@ -31,6 +32,7 @@ func main() {
 		batchCount  = int(p.MustGetUint("operation.batch.count"))
 		concurrency = int(p.MustGetUint("operation.concurrency"))
 		firstBatch  = int(p.MustGetUint("operation.first.batch"))
+		rampUpDelay = int(p.MustGetUint("operation.ramp.up.delay"))
 	)
 
 	var conn *sql.DB = nil
@@ -51,6 +53,7 @@ func main() {
 	for i := 0; i < workerCount; i++ {
 		currentBatch = i
 		go worker(firstBatch, currentBatch, conn, p, done)
+		time.Sleep(time.Duration(rampUpDelay) * time.Second)
 	}
 
 	// Restart when done until complete
