@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/magiconair/properties"
 	"gitlab.com/simpliroute/gps-migration-to-json/db"
+	"gitlab.com/simpliroute/gps-migration-to-json/output"
 	"gitlab.com/simpliroute/gps-migration-to-json/work"
 )
 
@@ -16,13 +18,13 @@ func min(x, y int) int {
 	return y
 }
 
-func worker(firstBatch int, i int, conn *sql.DB, p *properties.Properties, done chan bool) {
+func worker(firstBatch int, i int, conn *sql.DB, uploader *s3manager.Uploader, p *properties.Properties, done chan bool) {
 	if i < firstBatch {
 		done <- false
 		return
 	}
 
-	done <- work.Work(i, conn, p)
+	done <- work.Work(i, conn, uploader, p)
 }
 
 func main() {
@@ -33,7 +35,18 @@ func main() {
 		concurrency = int(p.MustGetUint("operation.concurrency"))
 		firstBatch  = int(p.MustGetUint("operation.first.batch"))
 		rampUpDelay = int(p.MustGetUint("operation.ramp.up.delay"))
+		outputType  = p.MustGetString("output.type")
 	)
+
+	var uploader *s3manager.Uploader
+
+	if outputType == "s3" {
+		var err error
+		uploader, err = output.GetS3Uploader()
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	var conn *sql.DB = nil
 	conn = db.Connect()
@@ -52,7 +65,7 @@ func main() {
 	// Init workers
 	for i := 0; i < workerCount; i++ {
 		currentBatch = i
-		go worker(firstBatch, currentBatch, conn, p, done)
+		go worker(firstBatch, currentBatch, conn, uploader, p, done)
 		time.Sleep(time.Duration(rampUpDelay) * time.Second)
 	}
 
@@ -85,7 +98,7 @@ func main() {
 		if !wrapUp {
 			currentBatch++
 			if batchCount == 0 || currentBatch < batchCount {
-				go worker(firstBatch, currentBatch, conn, p, done)
+				go worker(firstBatch, currentBatch, conn, uploader, p, done)
 			}
 		}
 	}

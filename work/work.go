@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/magiconair/properties"
 
 	"gitlab.com/simpliroute/gps-migration-to-json/db"
@@ -70,7 +71,7 @@ func dolog(i int, message string) {
 }
 
 // Work processes the migration and returns true if nothing else to do
-func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
+func Work(i int, conn *sql.DB, uploader *s3manager.Uploader, p *properties.Properties) (done bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			dolog(i, fmt.Sprint("Fatal! ", r))
@@ -141,6 +142,8 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 					output.WriteLatestTrackingStatusToFile(filename, buffer)
 				} else if outputType == "gcp" {
 					output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, buffer)
+				} else if outputType == "s3" {
+					output.WriteLatestTrackingStatusToS3(uploader, bucketName, filename, buffer)
 				} else if outputType == "console" {
 					output.WriteLatestTrackingStatusToConsole(buffer)
 				}
@@ -169,6 +172,8 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 					output.WriteLocationsToFile(filename, buffer)
 				} else if outputType == "gcp" {
 					output.WriteLocationsToCloudStorage(bucketName, filename, buffer)
+				} else if outputType == "s3" {
+					output.WriteLocationsToS3(uploader, bucketName, filename, buffer)
 				} else if outputType == "console" {
 					output.WriteLocationsToConsole(buffer)
 				}
