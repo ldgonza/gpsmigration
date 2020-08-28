@@ -50,7 +50,11 @@ func WriteLocationsToS3(uploader *s3manager.Uploader, bucketName string, fileNam
 		panic(err)
 	}
 
-	WriteToS3(uploader, bucketName, fileName, jsonString)
+	err = WriteToS3(uploader, bucketName, fileName, jsonString)
+	if err != nil {
+		panic(err)
+	}
+
 	return nil
 }
 
