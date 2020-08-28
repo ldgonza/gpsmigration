@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -28,6 +29,12 @@ func worker(firstBatch int, i int, conn *sql.DB, uploader *s3manager.Uploader, p
 }
 
 func main() {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		fmt.Println("Total Time Elapsed: ", duration.Seconds(), "s")
+	}()
+
 	p := properties.MustLoadFile("application.properties", properties.UTF8)
 
 	var (
