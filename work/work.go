@@ -138,11 +138,11 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 
 			if len(buffer) >= fileSize || curr >= len(latestStatus)-1 {
 				if outputType == "file" {
-					output.WriteLatestTrackingStatusToFile(filename, latestStatus)
+					output.WriteLatestTrackingStatusToFile(filename, buffer)
 				} else if outputType == "gcp" {
-					output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, latestStatus)
+					output.WriteLatestTrackingStatusToCloudStorage(bucketName, filename, buffer)
 				} else if outputType == "console" {
-					output.WriteLatestTrackingStatusToConsole(latestStatus)
+					output.WriteLatestTrackingStatusToConsole(buffer)
 				}
 
 				buffer = nil
@@ -154,7 +154,6 @@ func Work(i int, conn *sql.DB, p *properties.Properties) (done bool) {
 	}
 
 	if len(locations) > 0 {
-		locations = locations[0:7]
 		var buffer []output.TrackingLocation
 		filename := ""
 		for curr, location := range locations {
