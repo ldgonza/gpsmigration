@@ -25,9 +25,11 @@ func QueryDrivers(limit string, conn *sql.DB) []TrackingLocationDriver {
 	baseQuery := "select "
 	baseQuery += "l.created, l.modified, l.uuid, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
 	baseQuery += "from "
-	baseQuery += "tracking_locationdriver l "
+	baseQuery += "tracking_locationdriver_temp l "
 
-	query := baseQuery + " order by l.timestamp asc " + limit
+	// where := "row_number > " + strconv.Itoa(offset) + " order by row_number asc limit " + strconv.Itoa(readSize)
+	// query := baseQuery + " order by l.timestamp asc " + limit
+	query := baseQuery + " where " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

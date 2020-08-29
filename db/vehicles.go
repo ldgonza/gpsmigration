@@ -23,9 +23,11 @@ type TrackingLocationVehicle struct {
 func QueryVehicles(limit string, conn *sql.DB) []TrackingLocationVehicle {
 	baseQuery := "select l.created, l.modified, l.id, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.vehicle_id, l.alert "
 	baseQuery += "from "
-	baseQuery += "tracking_location l "
+	baseQuery += "tracking_location_temp l "
 
-	query := baseQuery + " order by l.timestamp asc  " + limit
+	// ./query.sh "select * from tracking_location_temp where row_number > 60000000 order by row_number asc limit 300000"
+	// query := baseQuery + " order by l.timestamp asc  " + limit
+	query := baseQuery + " where " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {

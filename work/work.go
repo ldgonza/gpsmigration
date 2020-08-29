@@ -100,7 +100,8 @@ func Work(i int, conn *sql.DB, uploader *s3manager.Uploader, p *properties.Prope
 
 	dolog(i, "Reading")
 	offset := i * int(readSize)
-	where := " limit " + strconv.Itoa(readSize) + " offset " + strconv.Itoa(offset)
+	//where := " limit " + strconv.Itoa(readSize) + " offset " + strconv.Itoa(offset)
+	where := "row_number > " + strconv.Itoa(offset) + " order by row_number asc limit " + strconv.Itoa(readSize)
 	dolog(i, where)
 
 	var locations []output.TrackingLocation
