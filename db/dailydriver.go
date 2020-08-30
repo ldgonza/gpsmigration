@@ -26,10 +26,11 @@ func QueryDriverDailyStatus(limit string, conn *sql.DB) []TrackingDriverDailySta
 	baseQuery += ", d.created, d.modified, d.date, d.battery_level, d.account_id, d.driver_id, d.location_id "
 	baseQuery += ", l.created, l.modified, l.uuid, l.timestamp AT TIME ZONE 'UTC', l.latitude, l.longitude, l.driver_id, l.accuracy, l.activity_type "
 	baseQuery += "from "
-	baseQuery += "tracking_driverdailystatus d "
+	baseQuery += "tracking_location_driver_daily_temp d "
 	baseQuery += "inner join tracking_locationdriver l on l.uuid = d.location_id "
 
-	query := baseQuery + " order by d.id asc " + limit
+	query := baseQuery + " where " + limit
+	// query := baseQuery + " order by d.id asc " + limit
 
 	rows, err := conn.Query(query)
 	if err != nil {
